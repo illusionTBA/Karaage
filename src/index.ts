@@ -211,8 +211,7 @@ const server = new Elysia()
                 encoding: {},
               },
             },
-            description:
-              "Provides information about an episode from the gogoanime site.",
+            description: "Provides source links of the episode.",
           },
         },
       },

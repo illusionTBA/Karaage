@@ -1,24 +1,22 @@
 import { load } from "cheerio";
-import type {
-  GogoCard,
-  GogoEpisode,
-  GogoInfo,
-  GogoRecentReleases,
-} from "../../types";
+import type { GogoCard, GogoInfo, GogoRecentReleases } from "../../types";
 import { GogoTypes } from "../../types";
 import db from "../../db";
 import { anime } from "../../db/schema";
 import { nanoid } from "nanoid";
 import { eq } from "drizzle-orm";
 import CryptoJS from "crypto-js";
-import crypto from "crypto";
-
-crypto.Decipher;
-
+import cache from "../../lib/cache";
 class Gogoanime {
   private Ajax: string;
   public useDB: boolean = true;
-  constructor(public url: string, useDB: boolean = true) {
+
+  constructor(
+    public url: string,
+    useDB: boolean = true,
+    public useCache: Boolean = true
+  ) {
+    this.useCache = useCache;
     this.useDB = useDB;
     this.url = url;
     this.Ajax = "https://ajax.gogocdn.net";
@@ -28,6 +26,11 @@ class Gogoanime {
     page: number = 1,
     lang: GogoTypes = GogoTypes.sub
   ) {
+    const cacheKey = `recent_releases_${page}_${lang}`;
+    if (this.useCache) {
+      const cached = await cache.get(cacheKey);
+      if (cached) return cached;
+    }
     const result: GogoRecentReleases[] = [];
     const res = await fetch(
       `${this.Ajax}/ajax/page-recent-release.html?page=${page}&type=${lang}`
@@ -51,27 +54,41 @@ class Gogoanime {
       });
     });
 
-    return result;
+    return this.useCache ? cache.set(cacheKey, result, 60 * 60) : result;
   }
 
   public async Search(term: string): Promise<GogoCard[]> {
-    const result: GogoCard[] = [];
+    const cacheKey = `search_${term}`;
+    if (this.useCache) {
+      const cached = await cache.get<GogoCard[]>(cacheKey);
+      if (cached) return cached;
+    }
     const res = await fetch(`${this.url}/search.html?keyword=${term}`);
     const cards = await this.scrapeCard(await res.text());
 
-    return cards;
+    return this.useCache ? cache.set(cacheKey, cards, 60 * 60) : cards;
   }
 
   public async getPopularAnime(page: number = 1): Promise<GogoCard[]> {
+    const cacheKey = `popular_${page}`;
+    if (this.useCache) {
+      const cached = await cache.get<GogoCard[]>(cacheKey);
+      if (cached) return cached;
+    }
     const res = await fetch(`${this.url}/popular.html?page=${page}`);
     const cards = await this.scrapeCard(await res.text());
 
-    return cards;
+    return this.useCache ? cache.set(cacheKey, cards, 60 * 60) : cards;
   }
 
   // Getting info on anime based on provided id
 
   public async getAnimeInfo(id: string) {
+    const cacheKey = `info_${id}`;
+    if (this.useCache) {
+      const cached = await cache.get<GogoInfo>(cacheKey);
+      if (cached) return cached;
+    }
     const result: GogoInfo = {
       title: "",
       image: "",
@@ -173,11 +190,17 @@ class Gogoanime {
       }
     }
 
-    return result;
+    return this.useCache ? cache.set(cacheKey, result, 60 * 60) : result;
   }
 
   // Get episodes source based on episode id
   public async getEpisodeSource(episodeId: string) {
+    const cacheKey = `source-${episodeId}`;
+    if (this.useCache) {
+      const result = await cache.get(cacheKey);
+      console.log("cache", cacheKey, result);
+      if (result) return result;
+    }
     if (!episodeId) {
       throw new Error("Episode ID is required");
     }
@@ -241,9 +264,8 @@ class Gogoanime {
       );
       delete sources.advertising;
       delete sources.linkiframe;
-      return {
-        ...sources,
-      };
+      console.log(sources);
+      return this.useCache ? cache.set(cacheKey, sources, 60 * 10) : sources;
     } catch (error) {
       console.log(error);
       return error;
