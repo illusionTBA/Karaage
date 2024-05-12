@@ -1,0 +1,20 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1715460226537,
+      "tag": "0000_curvy_toro",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1715462804118,
+      "tag": "0001_black_doctor_spectrum",
+      "breakpoints": true
+    }
+  ]
+}

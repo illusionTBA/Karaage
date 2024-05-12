@@ -1,0 +1,31 @@
+{
+  "name": "kaguya",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/crypto-js": "^4.2.2",
+    "drizzle-kit": "^0.21.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "start": "bun src/index.ts",
+    "dev": "bun --watch src/index.ts",
+    "migrate": "bun src/db/migrate.ts",
+    "generate": "bun drizzle-kit generate",
+    "studio": "bun drizzle-kit studio",
+    "seed": "bun src/db/seed.ts",
+    "setup": "bun generate && bun src/db/migrate.ts"
+  },
+  "dependencies": {
+    "@elysiajs/swagger": "^1.0.5",
+    "@libsql/client": "^0.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "crypto-js": "^4.2.0",
+    "drizzle-orm": "^0.30.10",
+    "elysia": "^1.0.17",
+    "nanoid": "^5.0.7"
+  }
+}
