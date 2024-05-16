@@ -7,7 +7,7 @@ import { nanoid } from "nanoid";
 import { eq } from "drizzle-orm";
 import CryptoJS from "crypto-js";
 import type { Redis } from "ioredis";
-import {Redis as client} from "ioredis"
+import { Redis as client } from "ioredis";
 import cache from "../cache";
 
 class Gogoanime {
@@ -17,8 +17,7 @@ class Gogoanime {
   constructor(
     public url: string,
     useDB: boolean = true,
-    public useCache: Boolean = true,
-    
+    public useCache: Boolean = true
   ) {
     this.useCache = useCache;
     this.useDB = useDB;
@@ -26,7 +25,6 @@ class Gogoanime {
     this.Ajax = "https://ajax.gogocdn.net";
     if (useCache) {
       this.cache = new client(Bun.env.REDIS_URL || "redis://127.0.0.1:6379");
-
     }
   }
 
@@ -62,7 +60,9 @@ class Gogoanime {
       });
     });
 
-    return this.useCache && this.cache ? cache.set(this.cache, cacheKey, result, 60 * 60) : result;
+    return this.useCache && this.cache
+      ? cache.set(this.cache, cacheKey, result, 60 * 60)
+      : result;
   }
 
   public async Search(term: string): Promise<GogoCard[]> {
@@ -74,7 +74,9 @@ class Gogoanime {
     const res = await fetch(`${this.url}/search.html?keyword=${term}`);
     const cards = await this.scrapeCard(await res.text());
 
-    return this.useCache && this.cache ? cache.set(this.cache, cacheKey, cards, 60 * 60) : cards;
+    return this.useCache && this.cache
+      ? cache.set(this.cache, cacheKey, cards, 60 * 60)
+      : cards;
   }
 
   public async getPopularAnime(page: number = 1): Promise<GogoCard[]> {
@@ -86,7 +88,9 @@ class Gogoanime {
     const res = await fetch(`${this.url}/popular.html?page=${page}`);
     const cards = await this.scrapeCard(await res.text());
 
-    return this.useCache && this.cache ? cache.set(this.cache, cacheKey, cards, 60 * 60) : cards;
+    return this.useCache && this.cache
+      ? cache.set(this.cache, cacheKey, cards, 60 * 60)
+      : cards;
   }
 
   // Getting info on anime based on provided id
@@ -208,7 +212,6 @@ class Gogoanime {
     const cacheKey = `source-${episodeId}`;
     if (this.useCache && this.cache) {
       const result = await cache.get(this.cache, cacheKey);
-      // console.log("cache", cacheKey, result);
       if (result) return result;
     }
     if (!episodeId) {
@@ -220,15 +223,13 @@ class Gogoanime {
       const $ = load(await res.text());
       const video_url = $(
         "html body div#wrapper_inside div#wrapper div#wrapper_bg section.content section.content_left div.main_body div.anime_video_body div.anime_muti_link > ul > li.anime > a"
-      ).attr("data-video")
+      ).attr("data-video");
       if (!video_url) {
         return {
-          message: "Video url not found"
-        }
+          message: "Video url not found",
+        };
       }
-      const url = new URL(
-       video_url
-      );
+      const url = new URL(video_url);
 
       const sp = await fetch(url.href);
 
@@ -280,7 +281,9 @@ class Gogoanime {
       delete sources.advertising;
       delete sources.linkiframe;
       // console.log(sources);
-      return this.useCache && this.cache ? cache.set(this.cache, cacheKey, sources, 60 * 10) : sources;
+      return this.useCache && this.cache
+        ? cache.set(this.cache, cacheKey, sources, 60 * 10)
+        : sources;
     } catch (error) {
       console.log(error);
       return error;
