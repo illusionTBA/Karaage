@@ -266,7 +266,7 @@ class Gogoanime {
       );
       delete sources.advertising;
       delete sources.linkiframe;
-      console.log(sources);
+      // console.log(sources);
       return this.useCache ? cache.set(cacheKey, sources, 60 * 10) : sources;
     } catch (error) {
       console.log(error);
