@@ -2,9 +2,11 @@ import Gogoanime from "./lib/gogoanime";
 import { GogoTypes } from "./types";
 import { Elysia, t } from "elysia";
 import { swagger } from "@elysiajs/swagger";
+
 const gogo = new Gogoanime(
   Bun.env.GOGOANIME_URL || "https://gogoanime3.co",
-  Boolean(Bun.env.USE_DB) || true
+  Boolean(Bun.env.USE_DB) || true,
+  Boolean(Bun.env.REDIS_URL)
 );
 
 const server = new Elysia()

@@ -1,15 +1,14 @@
-import { Redis } from "ioredis";
+import type { Redis } from "ioredis";
 
-const redis = new Redis(Bun.env.REDIS_URL || "redis://127.0.0.1:6379");
 
-const fetch = async <T>(key: string, fetcher: () => T, expires: number) => {
-  const existing = await get<T>(key);
+const fetch = async <T>(redis: Redis, key: string, fetcher: () => T, expires: number) => {
+  const existing = await get<T>(redis, key);
   if (existing !== null) return existing;
 
-  return set(key, fetcher, expires);
+  return set(redis, key, fetcher, expires);
 };
 
-const get = async <T>(key: string): Promise<T> => {
+const get = async <T>(redis: Redis, key: string): Promise<T> => {
   //   console.log("GET: " + key);
   const value = await redis.get(key);
   if (value === null) return null as any;
@@ -17,13 +16,13 @@ const get = async <T>(key: string): Promise<T> => {
   return JSON.parse(value);
 };
 
-const set = async <T>(key: string, data: T, expires: number) => {
+const set = async <T>(redis: Redis, key: string, data: T, expires: number) => {
   //   console.log(`SET: ${key}, EXP: ${expires}`);
   await redis.set(key, JSON.stringify(data), "EX", expires);
   return data;
 };
 
-const del = async (key: string) => {
+const del = async (redis: Redis, key: string) => {
   await redis.del(key);
 };
 

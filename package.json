@@ -6,7 +6,7 @@
     "@types/bun": "latest",
     "@types/crypto-js": "^4.2.2",
     "@types/ioredis": "^5.0.0",
-    "drizzle-kit": "^0.21.1"
+    "drizzle-kit": "^0.21.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
