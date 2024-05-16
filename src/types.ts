@@ -11,16 +11,6 @@ export type GogoRecentReleases = {
   type: "sub" | "dub" | "chinese";
 };
 
-// id: text("id").primaryKey(),
-// title: text("title").notNull(),
-// image: text("image").notNull(),
-// animeId: text("animeId").notNull(),
-// type: text("type").notNull(),
-// description: text("description").notNull(),
-// genres: text("genres").notNull(),
-// released: text("released").notNull(),
-// status: text("status").notNull(),
-
 export type GogoInfo = {
   title: string;
   image: string;
@@ -39,13 +29,6 @@ export type GogoCard = {
   image: string;
   released: string;
 };
-
-// id: text("id").primaryKey(),
-// title: text("title").notNull(),
-// number: integer("number").notNull(),
-// episodeId: text("episodeId").notNull(),
-// type: text("type").notNull(),
-// animeId: text("animeId").references(() => anime.animeId),
 
 export type GogoEpisode = {
   title: string;

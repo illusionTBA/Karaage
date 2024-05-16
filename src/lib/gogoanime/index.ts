@@ -200,7 +200,7 @@ class Gogoanime {
     const cacheKey = `source-${episodeId}`;
     if (this.useCache) {
       const result = await cache.get(cacheKey);
-      console.log("cache", cacheKey, result);
+      // console.log("cache", cacheKey, result);
       if (result) return result;
     }
     if (!episodeId) {
