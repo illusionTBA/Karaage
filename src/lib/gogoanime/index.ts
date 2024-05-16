@@ -85,10 +85,10 @@ class Gogoanime {
 
   public async getAnimeInfo(id: string) {
     const cacheKey = `info_${id}`;
-    if (this.useCache) {
-      const cached = await cache.get<GogoInfo>(cacheKey);
-      if (cached) return cached;
-    }
+    // if (this.useCache) {
+    //   const cached = await cache.get<GogoInfo>(cacheKey);
+    //   if (cached) return cached;
+    // }
     const result: GogoInfo = {
       title: "",
       image: "",
@@ -154,13 +154,15 @@ class Gogoanime {
     );
 
     const $$ = load(await episodesAjax.text());
-
+    console.log(episodesAjax);
     $$("html body ul#episode_related li").each((i, el) => {
       const title = $$(el).find("a > div.name").text();
       const number = Number(
         $$(el).find("a > div.name").text().replace("EP ", "")
       );
-      const episode_id = $$("a").attr("href")?.replace("/", "").trim() || "";
+      const episode_id =
+        $$(el).find("a").attr("href")?.replace("/", "").trim() || "";
+      // console.log(episode_id);
       result.episodes.push({
         title: title,
         number: number,
@@ -190,7 +192,7 @@ class Gogoanime {
       }
     }
 
-    return this.useCache ? cache.set(cacheKey, result, 60 * 60) : result;
+    return /* this.useCache ? cache.set(cacheKey, result, 60 * 60) : */ result;
   }
 
   // Get episodes source based on episode id
