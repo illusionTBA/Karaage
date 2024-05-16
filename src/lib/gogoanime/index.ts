@@ -204,7 +204,9 @@ class Gogoanime {
       }
     }
 
-    return /* this.useCache ? cache.set(cacheKey, result, 60 * 60) : */ result;
+    return this.useCache && this.cache
+      ? cache.set(this.cache, cacheKey, result, 60 * 60)
+      : result;
   }
 
   // Get episodes source based on episode id
