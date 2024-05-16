@@ -154,7 +154,7 @@ class Gogoanime {
     );
 
     const $$ = load(await episodesAjax.text());
-    console.log(episodesAjax);
+    // console.log(episodesAjax);
     $$("html body ul#episode_related li").each((i, el) => {
       const title = $$(el).find("a > div.name").text();
       const number = Number(
@@ -204,7 +204,7 @@ class Gogoanime {
       if (result) return result;
     }
     if (!episodeId) {
-      throw new Error("Episode ID is required");
+      return "Episode ID is required";
     }
     try {
       const res = await fetch(`${this.url}/${episodeId}`);
