@@ -18,9 +18,12 @@
     "generate": "bun drizzle-kit generate",
     "studio": "bun drizzle-kit studio",
     "seed": "bun src/db/seed.ts",
+    "seed:completed": "bun src/db/seed completed",
+    "seed:ongoing": "bun src/db/seed ongoing",
     "setup": "bun generate && bun src/db/migrate.ts"
   },
   "dependencies": {
+    "@elysiajs/cron": "^1.0.3",
     "@elysiajs/swagger": "^1.0.5",
     "@libsql/client": "^0.6.0",
     "cheerio": "^1.0.0-rc.12",

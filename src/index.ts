@@ -1,9 +1,8 @@
-import Gogoanime from "./lib/gogoanime";
-import { GogoTypes } from "./types";
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { gogoanime } from "./routes";
-
+import { cron, Patterns } from "@elysiajs/cron";
+import { UpdateGogoanimeEpisodes } from "./cron";
 const server = new Elysia()
   .use(
     swagger({
@@ -21,10 +20,22 @@ const server = new Elysia()
       },
     })
   )
+
+  .use(
+    cron({
+      name: "UpdateDatabse",
+      pattern: Patterns.everyMinutes(10),
+      async run() {
+        console.log(`[CRON] Updating Database...`);
+        await UpdateGogoanimeEpisodes();
+        console.log(`[CRON] Done Updating Database...`);
+      },
+    })
+  )
   // Routes
   .use(gogoanime)
-
   //
+
   .get(
     "/",
     () => {

@@ -97,116 +97,124 @@ class Gogoanime {
 
   public async getAnimeInfo(id: string) {
     const cacheKey = `info_${id}`;
-    // if (this.useCache) {
-    //   const cached = await cache.get<GogoInfo>(cacheKey);
-    //   if (cached) return cached;
-    // }
-    const result: GogoInfo = {
-      title: "",
-      image: "",
-      animeId: id, // Assuming id is the animeId
-      type: "sub", // Assuming default type is "sub"
-      description: "",
-      genres: [],
-      released: "",
-      status: "",
-      episodes: [],
-    };
-
-    if (this.useDB) {
-      const animeInfo = await db
-        .select()
-        .from(anime)
-        .where(eq(anime.animeId, id));
-      if (animeInfo.length > 0) {
-        return {
-          ...animeInfo[0],
-          genres: JSON.parse(animeInfo[0].genres),
-          episodes: JSON.parse(animeInfo[0].episodes),
-        };
-      }
+    if (this.useCache && this.cache) {
+      const cached = await cache.get<GogoInfo>(this.cache, cacheKey);
+      if (cached) return cached;
     }
+    try {
+      const result: GogoInfo = {
+        title: "",
+        image: "",
+        animeId: id, // Assuming id is the animeId
+        type: "sub", // Assuming default type is "sub"
+        description: "",
+        genres: [],
+        released: "",
+        status: "",
+        episodes: [],
+      };
 
-    const res = await fetch(`${this.url}/category/${id}`);
-    const $ = load(await res.text());
-    const container = $(
-      "html body div#wrapper_inside div#wrapper div#wrapper_bg section.content section.content_left div.main_body div.anime_info_body div.anime_info_body_bg"
-    );
-    const title = $(container).find("h1").text();
+      if (this.useDB) {
+        const animeInfo = await db
+          .select()
+          .from(anime)
+          .where(eq(anime.animeId, id));
+        if (animeInfo.length > 0) {
+          return {
+            ...animeInfo[0],
+            genres: JSON.parse(animeInfo[0].genres),
+            episodes: JSON.parse(animeInfo[0].episodes),
+          };
+        }
+      }
 
-    const image = $(container).find("img").attr("src");
-    const description = $(container).find("div.description").text();
-    /* Genres */
-    $(container)
-      .find("p.type:nth-child(7) a")
-      .each((i, el) => {
-        result.genres.push($(el).attr("title") || $(el).text());
-      });
-
-    const released = $(container)
-      .find("p.type:nth-child(8)")
-      .text()
-      .replace("Released: ", "");
-
-    const status = $(container).find("p.type:nth-child(9)").find("a").text();
-    result.title = title;
-    result.image = image || "";
-    result.description = description || "";
-    result.released = released || "???";
-    result.status = status || "???";
-    result.type = result.genres.includes("Dub") ? "dub" : "sub";
-    const movie_id = $(
-      "html body div#wrapper_inside div#wrapper div#wrapper_bg section.content section.content_left div.main_body div.anime_info_body div.anime_info_episodes div.anime_info_episodes_next input#movie_id.movie_id"
-    ).attr("value");
-    const alias = $(
-      "html body div#wrapper_inside div#wrapper div#wrapper_bg section.content section.content_left div.main_body div.anime_info_body div.anime_info_episodes div.anime_info_episodes_next input#alias_anime.alias_anime"
-    ).attr("value");
-    const episodesAjax = await fetch(
-      `${this.Ajax}/ajax/load-list-episode?ep_start=0&ep_end=999999999&id=${movie_id}&default_ep=0&alias=${alias}`
-    );
-
-    const $$ = load(await episodesAjax.text());
-    // console.log(episodesAjax);
-    $$("html body ul#episode_related li").each((i, el) => {
-      const title = $$(el).find("a > div.name").text();
-      const number = Number(
-        $$(el).find("a > div.name").text().replace("EP ", "")
+      const res = await fetch(`${this.url}/category/${id}`);
+      const $ = load(await res.text());
+      const container = $(
+        "html body div#wrapper_inside div#wrapper div#wrapper_bg section.content section.content_left div.main_body div.anime_info_body div.anime_info_body_bg"
       );
-      const episode_id =
-        $$(el).find("a").attr("href")?.replace("/", "").trim() || "";
-      // console.log(episode_id);
-      result.episodes.push({
-        title: title,
-        number: number,
-        episodeId: episode_id,
-        type: "sub",
-        animeId: id,
-      });
-    });
-    if (status === "Completed" && this.useDB) {
-      const dbresult = await db
-        .select()
-        .from(anime)
-        .where(eq(anime.animeId, id));
-      if (dbresult.length === 0) {
-        await db.insert(anime).values({
-          id: nanoid(),
-          title: title,
-          animeId: id,
-          image: image || "",
-          description: description || "",
-          genres: JSON.stringify(result.genres),
-          released: released || "???",
-          status: status || "???",
-          type: result.type,
-          episodes: JSON.stringify(result.episodes),
-        });
-      }
-    }
+      const title = $(container).find("h1").text();
 
-    return this.useCache && this.cache
-      ? cache.set(this.cache, cacheKey, result, 60 * 60)
-      : result;
+      const image = $(container).find("img").attr("src");
+      const description = $(container).find("div.description").text();
+      /* Genres */
+      $(container)
+        .find("p.type:nth-child(7) a")
+        .each((i, el) => {
+          result.genres.push($(el).attr("title") || $(el).text());
+        });
+
+      const released = $(container)
+        .find("p.type:nth-child(8)")
+        .text()
+        .replace("Released: ", "");
+
+      const status = $(container).find("p.type:nth-child(9)").find("a").text();
+      result.title = title;
+      result.image = image || "";
+      result.description = description || "";
+      result.released = released || "???";
+      result.status = status || "???";
+      result.type = result.genres.includes("Dub") ? "dub" : "sub";
+      const movie_id = $(
+        "html body div#wrapper_inside div#wrapper div#wrapper_bg section.content section.content_left div.main_body div.anime_info_body div.anime_info_episodes div.anime_info_episodes_next input#movie_id.movie_id"
+      ).attr("value");
+      const alias = $(
+        "html body div#wrapper_inside div#wrapper div#wrapper_bg section.content section.content_left div.main_body div.anime_info_body div.anime_info_episodes div.anime_info_episodes_next input#alias_anime.alias_anime"
+      ).attr("value");
+      const episodesAjax = await fetch(
+        `${this.Ajax}/ajax/load-list-episode?ep_start=0&ep_end=999999999&id=${movie_id}&default_ep=0&alias=${alias}`
+      );
+
+      const $$ = load(await episodesAjax.text());
+      // console.log(episodesAjax);
+      $$("html body ul#episode_related li").each((i, el) => {
+        const title = $$(el).find("a > div.name").text();
+        const number = Number(
+          $$(el).find("a > div.name").text().replace("EP ", "")
+        );
+        const episode_id =
+          $$(el).find("a").attr("href")?.replace("/", "").trim() || "";
+        // console.log(episode_id);
+        result.episodes.push({
+          title: title,
+          number: number,
+          episodeId: episode_id,
+          type: "sub",
+          animeId: id,
+        });
+      });
+      if (this.useDB) {
+        const dbresult = await db
+          .select()
+          .from(anime)
+          .where(eq(anime.animeId, id));
+        if (dbresult.length === 0) {
+          await db.insert(anime).values({
+            id: nanoid(),
+            title: title,
+            animeId: id,
+            image: image || "",
+            description: description || "",
+            genres: JSON.stringify(result.genres),
+            released: released || "???",
+            status: status || "???",
+            type: result.type,
+            episodes: JSON.stringify(result.episodes),
+          });
+        } else {
+          return this.useCache && this.cache
+            ? cache.set(this.cache, cacheKey, dbresult[0], 60 * 60)
+            : result;
+        }
+      }
+
+      return this.useCache && this.cache
+        ? cache.set(this.cache, cacheKey, result, 60 * 60)
+        : result;
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Get episodes source based on episode id
@@ -292,7 +300,7 @@ class Gogoanime {
     }
   }
 
-  private async scrapeCard(html: string): Promise<GogoCard[]> {
+  public async scrapeCard(html: string): Promise<GogoCard[]> {
     const result: GogoCard[] = [];
     const $ = load(html);
 
